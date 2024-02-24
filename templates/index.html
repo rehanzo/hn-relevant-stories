@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>HackerNews Relevance</title>
+  <script>
+    window.onload = function () {
+      document.getElementById("bioForm").onsubmit = function (e) {
+        e.preventDefault(); // Prevent form submission (page reload)
+        fetch('/api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: 'bio=' + encodeURIComponent(document.getElementById("bio").value)
+        }).then(response => response.json()).then(data => {
+          var storiesDiv = document.getElementById("articles");
+          storiesDiv.innerHTML = ''; // Clear previous stories
+          for (var story of data.stories) {
+            var p = document.createElement("p");
+            var a = document.createElement("a");
+            a.href = story.url;
+            a.innerText = story.title;
+            p.appendChild(a);
+            storiesDiv.appendChild(p);
+          }
+        });
+      };
+    };
+  </script>
+</head>
+
+<body>
+  <form id="bioForm" action="/" method="post">
+    <textarea id="bio" name="bio" rows="4" cols="50" placeholder="Enter your bio here"></textarea>
+    <input type="submit" value="Submit">
+  </form>
+  <div id="articles"></div>
+</body>
+
+</html>
