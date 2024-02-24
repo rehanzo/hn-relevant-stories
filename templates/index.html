@@ -3,12 +3,13 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>HackerNews Relevance</title>
+  <title>HackerNews Relevant Articles</title>
   <script>
+    const rootPath = window.location.href.split('/').pop();
     window.onload = function () {
       document.getElementById("bioForm").onsubmit = function (e) {
-        e.preventDefault(); // Prevent form submission (page reload)
-        fetch('/api', {
+        e.preventDefault();
+        fetch(rootPath + '/api', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -16,7 +17,7 @@
           body: 'bio=' + encodeURIComponent(document.getElementById("bio").value)
         }).then(response => response.json()).then(data => {
           var storiesDiv = document.getElementById("articles");
-          storiesDiv.innerHTML = ''; // Clear previous stories
+          storiesDiv.innerHTML = '';
           for (var story of data.stories) {
             var p = document.createElement("p");
             var a = document.createElement("a");

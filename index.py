@@ -4,7 +4,13 @@ from nltk.stem import WordNetLemmatizer
 from flask import Flask, request, jsonify, render_template
 import asyncio
 
-flask = Flask(__name__)
+app = Flask(__name__)
+
+nltk.data.path.append("/tmp")
+nltk.download("punkt", download_dir="/tmp")
+nltk.download('stopwords', download_dir="/tmp")
+nltk.download('averaged_perceptron_tagger', download_dir="/tmp")
+nltk.download('wordnet', download_dir="/tmp")
 
 def hn_parse(limit=500):
     # Create seperate event loop for hn
@@ -15,7 +21,7 @@ def hn_parse(limit=500):
     hn = HackerNews()
     top_stories = hn.top_stories(limit=limit)
 
-    # Closing event loop
+    # close hn event loop
     loop.close()
 
     return top_stories
@@ -28,11 +34,11 @@ def lemmatize(string):
     stopwords = set(nltk.corpus.stopwords.words('english'))
     words=[word.lower() for word in words if word.isalpha() and word.lower() not in stopwords]
 
-    # tag
+    # tag words
     tagged = nltk.pos_tag(words)
 
-    # filter out everything but nouns (NN), proper nouns (NNP), and adjectives (JJ)
-    keywords = [word for word, tag in tagged if tag in ("NN", "NNP", "JJ")]
+    # filter out everything but nouns (NN), proper nouns (NNP), and plural nouns (NNS)
+    keywords = [word for word, tag in tagged if tag in ("NN", "NNP", "NNS")]
 
     # lemmatization
     wnl = WordNetLemmatizer()
@@ -59,7 +65,8 @@ def relevance_reorder(stories, bio):
         if story.text is not None:
             # do same scoring with text, but not *2
             text_l = lemmatize(story.text)
-            common_text = list(set(text_l) & set(bio_l))
+            # skip words already accounted for with title
+            common_text = [word for word in list(set(text_l) & set(bio_l)) if word not in common_title]
             score += len(common_text)
 
         story_score.append((story, score))
@@ -67,7 +74,7 @@ def relevance_reorder(stories, bio):
     # return array sorted based on score, descending
     return [e[0] for e in sorted(story_score, key=lambda x: x[1], reverse=True)]
 
-@flask.route('/api', methods=['POST'])
+@app.route('/api', methods=['POST'])
 def api_route():
     bio = request.form.get('bio')
     stories = hn_parse(500)
@@ -76,6 +83,8 @@ def api_route():
 
     return jsonify(stories=stories)
 
-@flask.route('/', methods=['GET'])
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+# app.run(debug=True)
