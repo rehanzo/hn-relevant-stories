@@ -8,3 +8,4 @@ The thought process is that these key words pulled from the bio and posts can id
 This was optimized for dev time, so of course this is far from the optimal solution. It is also quite slow.
 
 [Live Demo](https://0or42p1b4e.execute-api.ca-central-1.amazonaws.com/dev)
+[API](https://0or42p1b4e.execute-api.ca-central-1.amazonaws.com/dev/api)
